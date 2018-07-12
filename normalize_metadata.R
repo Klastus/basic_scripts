@@ -23,8 +23,8 @@ normalizeMetadata <- function(metadata_path,
   }
 }
 
-normalizeMetadata(metadata_path = 
-                    "/Volumes/Experiments/Pathway/m.komorowski/piotrek/mapplates/2017-07-05-PT21")
+# normalizeMetadata(metadata_path = 
+#                     "/Volumes/Experiments/Pathway/m.komorowski/piotrek/mapplates/2017-07-05-PT21")
 
 
 

@@ -23,7 +23,7 @@ package.load <- sapply(package.list, function(package.name){
 wd.tmp <- dirname(sys.frame(1)$ofile) ### script
 
 #### MAIN  ####
-theme_jetka <-  function (base_size = 12,
+theme_jetka <-  function (base_size = 8,
                           base_family = "sans",
                           text_size = 18,
                           text_size_2 = 3*text_size/4) 

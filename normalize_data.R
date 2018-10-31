@@ -25,22 +25,23 @@ cc.assign <- function(dane, cc.borders, DAPI.column){
   return(c.phase)
 }
 
-micro_blocking_DAPI <- function(title,
-                                liczby,
-                                xlim=c(0,4e6),
-                                ylim=c(0,500),
-                                bins=100,
-                                DAPI.column) {
-  
-  g<-ggplot(liczby,
-            aes_string(x=DAPI.column))+
+dna.histogram <- function(data, channel, bins, 
+                          border.list, title, 
+                          xlab, ylab, xlim, ylim=c(0, 0)){
+  g <- ggplot(data, aes_string(x=channel))+
     geom_histogram(bins=bins)+
-    theme_jetka()+
-    xlab(paste("DNA content, n=", NROW(liczby)))+
+    geom_vline(xintercept = border.list[[1]], col="red")+
+    geom_vline(xintercept = border.list[[2]], col="orange")+
+    geom_vline(xintercept = border.list[[3]], col="green")+
+    geom_vline(xintercept = border.list[[4]], col="blue")+
     ggtitle(title)+
+    theme_jetka()+
+    xlab(xlab)+
+    ylab(ylab)+
     xlim(xlim)+
-    ylim(ylim)
-  print(g)
+    if(ylim[2]){ 
+      ylim(ylim)
+    }
   return(g)
 }
 
@@ -65,4 +66,4 @@ library(ggplot2)
 library(deamer)
 library(foreach)
 library(doParallel)
-
+library(dplyr)

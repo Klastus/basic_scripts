@@ -25,6 +25,24 @@ cc.assign <- function(dane, cc.borders, DAPI.column){
   return(c.phase)
 }
 
+discriminate <- function(dane, borders, var.column, factor.list){
+  c.phase <- c()
+  for (i in dane[[var.column]]) {
+    if (i < borders[[1]]){
+      c.phase <- c(c.phase, factor.list[[1]])
+    } else if (i < borders[[2]]){
+      c.phase <- c(c.phase, factor.list[[2]])
+    } else if (i < borders[[3]]){
+      c.phase <- c(c.phase, factor.list[[3]])
+    } else if (i < borders[[4]]){
+      c.phase <- c(c.phase, factor.list[[4]])
+    } else { 
+      c.phase <- c(c.phase, factor.list[[1]])
+    }
+  }
+  return(c.phase)
+}
+
 dna.histogram <- function(data, channel, bins, 
                           border.list, title, 
                           xlab, ylab, xlim, ylim=c(0, 0)){
@@ -50,15 +68,28 @@ cc.to.factor <- function(phases=c("G1","S","G2/M"), df){
   df.subset$phase <- factor(df.subset$phase, levels = phases)
   return(df.subset)
 }
-variable.subset <- function(data, columns, new.columns){
+variable.subset <- function(data, columns, new.columns = 0){
   data.2 <- data[, colnames(data) %in% columns]
-  colnames(data.2) <- new.columns
+  if(new.columns[1]!=0){
+    colnames(data.2) <- new.columns
+    }
   return(data.2)
 }
+
 randomRows <- function(df, n){
   return(df[sample(nrow(df), n), ])
 }
 
+
+CV <- function(x){
+  return(sd(x)/mean(x))
+}
+
+push.dir <- function(folder.name){
+  if(!dir.exists(folder.name)){
+    dir.create(folder.name)
+  }
+}
 library(gridExtra)
 library(flowCore)
 library(reshape2)

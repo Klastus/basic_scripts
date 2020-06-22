@@ -28,35 +28,56 @@ cc.assign <- function(dane, cc.borders, DAPI.column){
 discriminate <- function(data, borders, var.column, factor.list){
   c.phase <- c()
   for (i in data[[var.column]]) {
-    if (i < borders[[1]]){
+    if (i <= borders[[1]]){
       c.phase <- c(c.phase, factor.list[[1]])
-    } else if (i < borders[[2]]){
+    } else if (i <= borders[[2]]){
       c.phase <- c(c.phase, factor.list[[2]])
-    } else if (i < borders[[3]]){
+    } else if (i <= borders[[3]]){
       c.phase <- c(c.phase, factor.list[[3]])
-    } else if (i < borders[[4]]){
+    } else if (i <= borders[[4]]){
       c.phase <- c(c.phase, factor.list[[4]])
     } else { 
       c.phase <- c(c.phase, factor.list[[1]])
     }
   }
-  return(c.phase)
+  return(factor(c.phase, levels = paste(factor.list)))
+}
+
+distinguish <- function(data, 
+                        borders, 
+                        var.column, 
+                        factor.list){
+  c.phase <- c()
+  for (i in data[[var.column]]) {
+    for(discriminated in 1:length(borders)){
+      if (i <= borders[[discriminated]]){
+        c.phase <- c(c.phase, factor.list[[discriminated]])
+        break
+      } else if(discriminated == length(borders)){
+        c.phase <- c(c.phase, factor.list[[1]])
+      }
+    }
+  }
+  return(factor(c.phase, levels = paste(factor.list)))
 }
 
 dna.histogram <- function(data, channel, bins = 100, 
                           border.list, title = "random title", 
-                          xlab = "DAPI", ylab = "count", xlim){
+                          xlab = "DAPI", ylab = "count", xlim,
+                          thickness = 1, 
+                          aspect.ratio = 1,
+                          linetype = 2){
   g <- ggplot(data, aes_string(x=channel))+
     geom_histogram(bins=bins)+
-    geom_vline(xintercept = border.list[[1]], col="red")+
-    geom_vline(xintercept = border.list[[2]], col="orange")+
-    geom_vline(xintercept = border.list[[3]], col="green")+
-    geom_vline(xintercept = border.list[[4]], col="blue")+
+    geom_vline(xintercept = border.list[[1]], col="red", size = thickness, linetype = linetype)+
+    geom_vline(xintercept = border.list[[2]], col="orange", size = thickness, linetype = linetype)+
+    geom_vline(xintercept = border.list[[3]], col="green", size = thickness, linetype = linetype)+
+    geom_vline(xintercept = border.list[[4]], col="blue", size = thickness, linetype = linetype)+
     ggtitle(title)+
-    theme_sysbiosig()+
-    xlab(xlab)+
-    ylab(ylab)+
-    xlim(xlim)
+    scale_x_continuous(expand = c(0, 0), name = xlab, limits = xlim)+
+    scale_y_continuous(expand = c(0, 0), name = ylab)+
+    theme_trajectories(aspect.ratio = aspect.ratio)+
+    ylab(ylab)
   return(g)
 }
 
@@ -70,7 +91,7 @@ variable.subset <- function(data, columns, new.columns = 0){
   data.2 <- data[, colnames(data) %in% columns]
   if(new.columns[1]!=0){
     colnames(data.2) <- new.columns
-    }
+  }
   return(data.2)
 }
 
@@ -111,7 +132,7 @@ zero.time.multiply <- function(data.zero, data.no.zero,
   if(stimulation.of.zero == -1){
     return(rbind(data.no.zero, data.zeros))
   } else {
-  return(rbind(data.zero.unchanged, data.no.zero, data.zeros))
+    return(rbind(data.zero.unchanged, data.no.zero, data.zeros))
   }
 }
 
@@ -131,14 +152,14 @@ package.list <- list("ggplot2",
                      "rlist",
                      "extrafont")
 try({package.list
-package.load <- sapply(package.list, function(package.name){
-  package.exist <- require(package.name, character.only = TRUE)
-  if(!package.exist){
-    install.packages(package.name)
-    return(library(package.name, character.only = TRUE))
-  }
-  return(package.exist)
-})
+  package.load <- sapply(package.list, function(package.name){
+    package.exist <- require(package.name, character.only = TRUE)
+    if(!package.exist){
+      install.packages(package.name)
+      return(library(package.name, character.only = TRUE))
+    }
+    return(package.exist)
+  })
 })
 
 
@@ -150,7 +171,7 @@ copy.IPIQA <- function(ipiqa.path = "D:/IPIQA/analysis_output/2019-08-27/",
                        shift.value = FALSE) {
   
   string <- tail(strsplit(experiment.full.name, "-")[[1]], 1)
-  exper.last.name <- regmatches(string, regexpr("PT|JW\\d+", string))
+  exper.last.name <- regmatches(string, regexpr("(PT|JW)\\d+", string))
   
   exper.path = list.dirs(paste(ipiqa.path, experiment.full.name, sep = ""),
                          recursive = FALSE, full.names = TRUE) [1]
@@ -158,25 +179,25 @@ copy.IPIQA <- function(ipiqa.path = "D:/IPIQA/analysis_output/2019-08-27/",
   normalizations <- list.dirs(exper.path, recursive = FALSE, full.names = FALSE)
   for(normaliz in normalizations){
     for(csv.name in csv.name.list){
-    csv.path <- paste(exper.path, 
-                      normaliz, 
-                      "data_quantify", 
-                      csv.name,
-                      sep = "/")
-    destination.path <- paste(core.destination, 
-                              exper.last.name, 
-                              "/R/", 
-                              project, 
-                              "/input/", 
-                              normaliz, 
-                              "/",
-                              if(shift.value != FALSE){
-                              shift.value},
-                              sep = "")
-    push.dir(destination.path)
-    file.copy(from = csv.path,
-              to = destination.path,
-              overwrite = TRUE)
+      csv.path <- paste(exper.path, 
+                        normaliz, 
+                        "data_quantify", 
+                        csv.name,
+                        sep = "/")
+      destination.path <- paste(core.destination, 
+                                exper.last.name, 
+                                "/R/", 
+                                project, 
+                                "/input/", 
+                                normaliz, 
+                                "/",
+                                if(shift.value != FALSE){
+                                  shift.value},
+                                sep = "")
+      push.dir(destination.path)
+      file.copy(from = csv.path,
+                to = destination.path,
+                overwrite = TRUE)
     }
   }
 }
@@ -186,16 +207,16 @@ theme_trajectories <- function(border.thickness = 0.5,
                                axis.name.size = 11,
                                aspect.ratio = FALSE){
   theme(panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour = "black", size=border.thickness, fill=NA),
-      panel.background = element_blank(),
-      axis.ticks = element_line(colour = "black", size = border.thickness),
-      axis.text.x = element_text(colour = "black", size = axis.num.size),
-      axis.text.y = element_text(colour = "black", size = axis.num.size),
-      strip.background = element_blank(),
-      axis.title = element_text(face="plain", size = axis.name.size),
-      plot.title = element_text(hjust = 0.5),
-      legend.key=element_blank())+
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", size=border.thickness, fill=NA),
+        panel.background = element_blank(),
+        axis.ticks = element_line(colour = "black", size = border.thickness),
+        axis.text.x = element_text(colour = "black", size = axis.num.size),
+        axis.text.y = element_text(colour = "black", size = axis.num.size),
+        strip.background = element_blank(),
+        axis.title = element_text(face="plain", size = axis.name.size),
+        plot.title = element_text(hjust = 0.5),
+        legend.key=element_blank())+
     if(aspect.ratio != FALSE){
       theme(aspect.ratio = aspect.ratio)
     } else {theme()}
@@ -220,6 +241,7 @@ theme.itrc <- function(){
 
 
 nice.colors <- c("forestgreen", "steelblue", "coral3", "cadetblue", "mediumorchid4")
+cc.pal <- c("coral3", "darkorange3", "skyblue3")
 # IFN.pal <- c(brewer.pal(5, "PuBu"))[c(1,2,3,5)]
 IFN.pal <- c(brewer.pal(8, "PuBu"))[c(3,5,7,8)]
 TNF.pal <- c(brewer.pal(5, "OrRd"))[c(1,2,3,5)]
@@ -227,9 +249,9 @@ OSM.pal <- c("#cbdeda", "#63bda3", "#218845", "#114320")
 overlaps.pal <- c(brewer.pal(5, "BuGn"))[c(1,2,3,5)]
 
 pdf.push <- function(file, ...){
-    if(!dir.exists(dirname(file))){
-      dir.create(dirname(file), recursive = TRUE)
-    }
+  if(!dir.exists(dirname(file))){
+    dir.create(dirname(file), recursive = TRUE)
+  }
   pdf(file, ...)
 }
 
@@ -256,8 +278,8 @@ pbs.normalize <- function(data,
 }
 
 load.bio <- function(bio.path,
-                     columns = c("Intensity_IntegratedIntensity_Alexa488",
-                                        "Intensity_MeanIntensity_Alexa488")){
+                      columns = c("Intensity_IntegratedIntensity_Alexa488",
+                                  "Intensity_MeanIntensity_Alexa488")){
   
   bio.nuc <- read.table(bio.path, header=TRUE, sep=",")
   
@@ -269,16 +291,17 @@ load.bio <- function(bio.path,
   if(columns == "all"){
     columns.all <- colnames(bio.nuc)
   } else {
-  columns.basic <- c("AreaShape_Area",
-                     "AreaShape_Center_X",
-                     "AreaShape_Center_Y")
-  columns.all <- c(columns.basic, columns, 
-                   colnames(bio.nuc)[from:to])
+    columns.basic <- c("AreaShape_Area",
+                       "AreaShape_Center_X",
+                       "AreaShape_Center_Y")
+    columns.all <- c(columns.basic, columns, 
+                     colnames(bio.nuc)[from:to])
   }
   bio.nuc <- bio.nuc[, columns.all]
   
   return(bio.nuc)
 }
+
 
 # how to install and use fonts:
 # 1. download the font from any webpage (ttf format) and install it (right click on windows)
